@@ -7,12 +7,40 @@
      like "top forwards in 2022-23".
 ===========================================================
 """
-
+import os
+import ssl
+import sys
 from neo4j import GraphDatabase
 from sentence_transformers import SentenceTransformer
 import os
 from typing import Dict, Any, List
 
+
+# --- 1. BYPASS MAC SSL/NETWORK BLOCKS ---
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+os.environ['CURL_CA_BUNDLE'] = '' 
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
+
+# --- 2. AUTOMATIC DOWNLOAD LOGIC ---
+try:
+    from sentence_transformers import SentenceTransformer
+    print("Checking/Downloading Embedding Models...")
+    
+    # This will check local cache first; if missing, it downloads them automatically.
+    model_1 = SentenceTransformer("all-MiniLM-L6-v2")      
+    model_2 = SentenceTransformer("all-mpnet-base-v2")      
+    
+    print("✅ Models loaded successfully.")
+except Exception as e:
+    print(f"❌ Failed to load/download models. Error: {e}")
+    # We exit with 1 so app.py knows the subprocess failed
+    sys.exit(1)
 # ---------------------------------------------------------
 # Config Loading 
 # ---------------------------------------------------------

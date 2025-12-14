@@ -297,7 +297,7 @@ def generate_response_from_results(question: str, pipeline_output: dict, selecte
 
     # ✅ Option A rule:
     # Use semantic only if embeddings-only OR hybrid and baseline failed
-    use_semantic = (retrieval_method == "embeddings") or (retrieval_method == "hybrid" and not has_baseline_data)
+    use_semantic = (retrieval_method == "embeddings") or (retrieval_method == "hybrid")
 
     # Build context: keep semantic visible only if we intend to use it in the answer
     context = {
@@ -323,17 +323,14 @@ def generate_response_from_results(question: str, pipeline_output: dict, selecte
     if has_baseline_data or has_semantic_data:
         instruction = (
             "**STRICT INSTRUCTION (HYBRID RAG AGGREGATION):**\n"
-            "1) **PRIORITIZE BASELINE (80% Weight):** Use `context['baseline']` for all hard facts, exact stats, and official rankings. "
-            "The Baseline represents the ground truth of the Knowledge Graph.\n"
-            "2) **AUGMENT WITH SEMANTIC (20% Weight):** Use `context['semantic']` ONLY to add context, 'similar-style' suggestions, "
-            "or to fulfill conceptual requests (like 'Who is like this player?') that Baseline can't capture.\n"
-            "3) **CONFLICT RESOLUTION:** If Baseline and Semantic provide different numbers for the same player, ALWAYS use the Baseline number.\n"
-            "4) **LIST FORMATTING:** If answering a list query (e.g., Top 10), provide the official Baseline list first. "
-            "Then, add a 'Semantic Suggestions' section at the end for players who fit the vibe but weren't in the top stat list.\n"
-            "5) **TRUTHFULNESS:** If Baseline is empty but Semantic has data, provide the suggestions but clearly state: "
-            "'Exact database records were not found, but based on playing style, here are the most relevant players:'\n"
-            "6) **NO GHOSTING:** Do not mention internal context names like 'context[baseline]'. Answer as an FPL expert."
-        )
+            "1) **EQUAL WEIGHT:** You must use BOTH the `baseline` and `semantic` data to construct your answer.\n"
+            "2) **LISTING METHOD:** If the user asks for a 'Top', 'Best', or any list of players:\n"
+            "   - Create a clearly numbered list based on the `baseline` statistics first.\n"
+            "   - For each player in the list, if they also appear in the `semantic` data, add a brief note about their playing style.\n"
+            "   - If the `semantic` data contains relevant players NOT in the top baseline list, add a 'Semantic Style Matches' sub-section after the main list.\n"
+            "3) **COMBINATION RULE:** For conversational queries, start with `baseline` facts and follow up with `semantic` style insights.\n"
+            "4) **NO DATA LOSS:** Do not discard semantic suggestions. If a player appears in both, merge their stats (Baseline) with their style description (Semantic).\n"
+            "5) **FORMAT:** Provide a unified, professional response as an FPL expert. Do not use technical internal labels like 'context['baseline']'.\n")
 
     else:
         # No usable data

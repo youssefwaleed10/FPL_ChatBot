@@ -1,9 +1,38 @@
+import os
+os.environ['CURL_CA_BUNDLE'] = ''
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
 import streamlit as st
 from llm_layer import answer_query
 from preprocessing import extract_entities, classify_intent
 import networkx as nx
 import matplotlib.pyplot as plt
+import subprocess
+import sys
 
+
+
+@st.cache_resource
+def run_initial_embedding():
+    # Force SSL bypass inside the main app too
+    os.environ['CURL_CA_BUNDLE'] = ''
+    
+    st.info("First-time setup: Syncing Knowledge Graph embeddings...")
+    try:
+        # Capture output so we can see the error in Streamlit if it fails
+        result = subprocess.run(
+            [sys.executable, "embeddings.py"], 
+            capture_output=True, 
+            text=True, 
+            check=True
+        )
+        st.success("Embedding sync complete!")
+        return True
+    except subprocess.CalledProcessError as e:
+        st.error("❌ Embedding Setup Failed!")
+        st.code(e.stderr) # This will show the actual terminal error in the UI
+        return False
+# Trigger the run
+run_initial_embedding()
 # -------------------------------------------------------
 # Page Setups
 # -------------------------------------------------------
