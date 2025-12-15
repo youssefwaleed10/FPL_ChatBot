@@ -36,9 +36,9 @@ try:
     model_1 = SentenceTransformer("all-MiniLM-L6-v2")      
     model_2 = SentenceTransformer("all-mpnet-base-v2")      
     
-    print("✅ Models loaded successfully.")
+    print("Models loaded successfully.")
 except Exception as e:
-    print(f"❌ Failed to load/download models. Error: {e}")
+    print(f"Failed to load/download models. Error: {e}")
     # We exit with 1 so app.py knows the subprocess failed
     sys.exit(1)
 # ---------------------------------------------------------
@@ -349,8 +349,8 @@ if __name__ == "__main__":
     print("\n==============================================")
     print(f"Test Query Results for '{test_query}':")
     if results:
-        print("✅ SUCCESS: Seasonal Embeddings are retrieved.")
+        print(" SUCCESS: Seasonal Embeddings are retrieved.")
         print(results)
     else:
-        print("❌ FAILURE: Test search returned no results. Check Neo4j logs.")
+        print(" FAILURE: Test search returned no results. Check Neo4j logs.")
     print("==============================================")
